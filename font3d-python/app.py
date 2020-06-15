@@ -1,14 +1,27 @@
-from flask import send_file
+from flask import Flask, request, abort, send_file, make_response, jsonify
 from subprocess import call
 import os
-
-from flask import Flask
-from flask import request
 from tempfile import NamedTemporaryFile
+
 app = Flask(__name__)
 
-@app.route('/generate', methods=['POST'])
-def http():
+@app.route('/generate', methods=['POST', 'OPTIONS'])
+def main():
+    if request.method == 'OPTIONS':
+        # Allows GET requests from any origin with the Content-Type
+        # header and caches preflight response for an 3600s
+        headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '3600'
+        }
+        print(headers)
+        return ('', 204, headers)
+
+    # Load data from body
+    if not request.json:
+        abort(400)
     body = request.get_json()
     word = body["word"]
 
@@ -32,7 +45,9 @@ def http():
         
     tmpStl.seek(0)
 
-    return send_file(tmpStl, as_attachment=True, attachment_filename='{0}.stl'.format(word))
+    response = make_response(send_file(tmpStl.name, as_attachment=True, attachment_filename='{0}.stl'.format(word)))
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
