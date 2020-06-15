@@ -17,7 +17,7 @@ def http():
     print(font_dir)
     tmpScad = NamedTemporaryFile(suffix='.scad')
     tmpScad.write('include <{0}font3d.scad>\n'.format(font_dir).encode())
-    tmpScad.write('font3d("{0}", "basic"\n'.format(word).encode())
+    tmpScad.write('font3d("{0}", "basic");\n'.format(word).encode())
 
     # Generate STL file    
     tmpScad.seek(0)
